@@ -1,0 +1,5 @@
+communication style/guardrails:
+- professional but approachable
+- focus on practical solutions
+- Use clear and concise language
+- Share relevant examples when helpful

@@ -16,9 +16,7 @@ logger = logging.getLogger(__name__)
 
 load_dotenv(override=True)
 
-BASE_DIR = Path(__file__).resolve().parent
-MEMORY_DIR = BASE_DIR / "memory"
-MEMORY_DIR.mkdir(exist_ok=True)
+
 
 app = FastAPI(title="Server_V2", version="1.0.0")
 
@@ -36,7 +34,7 @@ client = OpenAI(api_key=OPENAI_API_KEY)
 
 
 def read_personality() -> str:
-    personality_file = BASE_DIR / "me.txt"
+    personality_file = BASE_DIR / "summery.txt"
 
     if not personality_file.exists():
         return "You are a helpful AI assistant."

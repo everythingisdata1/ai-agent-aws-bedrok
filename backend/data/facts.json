@@ -1,0 +1,21 @@
+{
+  "full_name": "Bharat Singh",
+  "nick_name": "Bharat",
+  "current_role": "Software Engineer",
+  "location": "India",
+  "email": "bharat.singh@example.com",
+  "linkedin": "https://www.linkedin.com/in/bharat-singh",
+  "specialities": [
+    "Full Stack Development",
+    "Cloud Computing",
+    "Machine Learning"
+  ],
+  "years_of_experience": 15,
+  "education": [
+    {
+      "degree": "Master of Science in Computer Science",
+      "institution": "Stanford University",
+      "year_of_graduation": 2010
+    }
+  ]
+}

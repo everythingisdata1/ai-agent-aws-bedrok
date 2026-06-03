@@ -1,36 +1,39 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# AI Assistant
+
+This is AI assistant, which will explain how to deploy in preproduction using
+AWS AI infra.
+
+## Tech Stack
+
+- Python
+- Next.js
+- openAI Sdk
+- AWS (Bedrok, lambada and Api Gateway)
+
+# Prerequisite
+
+- Node/NPM
+- UV
+- Python
+- Create AWS Free Tier Account
+- Create OpenAI key, by paying with minimal $5 upfront
+
+_**Note: Always use non-root aws account and monitor cost**_
 
 ## Getting Started
 
-First, run the development server:
+First Next.js project frontend project
 
 ```bash
+npm create-next-app@latest --frontend --ts --app --no-src-dir
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Second Create beckend python project
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
-
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
-
-## Learn More
-
-To learn more about Next.js, take a look at the following resources:
-
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+```bash 
+uv init 
+uv sync 
+uv run uvicorn server_v2:app --reload
+```
+ 

@@ -50,7 +50,7 @@ client = OpenAI(api_key=OPENAI_API_KEY)
 
 def load_personality():
     try:
-        with open("../me.txt", "r", encoding="utf-8", ) as f:
+        with open("../data/summery.txt", "r", encoding="utf-8", ) as f:
             return f.read().strip()
 
     except FileNotFoundError:
