@@ -2,7 +2,6 @@ import json
 import logging
 import os
 import uuid
-from pathlib import Path
 from typing import Optional
 
 from dotenv import load_dotenv
@@ -12,7 +11,8 @@ from openai import OpenAI
 from pydantic import BaseModel
 
 from backend.src.config.app_config import get_agent_config
-from backend.src.config.memory_loader import get_file
+from backend.src.services.conversation_service import load_conversation, save_conversation
+from backend.src.services.personality_service import read_personality
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
@@ -35,43 +35,6 @@ if not OPENAI_API_KEY:
     raise EnvironmentError("OPENAI_API_KEY is required to run the server.")
 
 client = OpenAI(api_key=OPENAI_API_KEY)
-
-
-def read_personality() -> str:
-    personality_file = get_file(f"summary.txt", agent_conf)
-
-    if not personality_file.exists():
-        return "You are a helpful AI assistant."
-
-    return personality_file.read_text(encoding="utf-8").strip()
-
-
-PERSONALITY = read_personality()
-
-
-def get_conversation_file(session_id: str) -> Path:
-    return get_file(f"{session_id}.json", agent_conf)
-
-
-def load_conversation(session_id: str) -> list:
-    file_path = get_conversation_file(session_id)
-
-    logger.info(f"Loading conversation from: {file_path}")
-    if not file_path.exists():
-        return []
-    try:
-        return json.loads(file_path.read_text(encoding="utf-8"))
-    except Exception as e:
-        logger.error(f"Failed to load conversation {session_id}: {e}")
-        return []
-
-
-def save_conversation(session_id: str, conversation: list) -> None:
-    file_path = get_conversation_file(session_id)
-    file_path.write_text(
-        json.dumps(conversation, ensure_ascii=False, indent=4),
-        encoding="utf-8"
-    )
 
 
 # -----------------------------------------------------------------------------
@@ -103,48 +66,32 @@ def chat(request: ChatRequest):
     try:
         session_id = request.session_id or str(uuid.uuid4())
 
-        logger.info(
-            f"Session ID: {session_id} | Message: {request.message}"
-        )
+        logger.info(f"Session ID: {session_id} | Message: {request.message}")
 
         conversation = load_conversation(session_id)
 
-        messages = [
-            {"role": "system", "content": PERSONALITY},
-            *conversation,
-            {"role": "user", "content": request.message},
-        ]
+        messages = [{"role": "system", "content": read_personality(agent_conf)},
+                    *conversation,
+                    {"role": "user", "content": request.message}]
 
-        response = client.chat.completions.create(
-            model="gpt-4o-mini",
-            messages=messages,
-            max_completion_tokens=150
-        )
+        response = client.chat.completions.create(model="gpt-4o-mini",
+                                                  messages=messages,
+                                                  max_completion_tokens=150)
 
         assistant_message = (response.choices[0].message.content or "No Response Generated").strip()
 
-        conversation.extend([
-            {"role": "user", "content": request.message},
-            {"role": "assistant", "content": assistant_message}
-        ])
+        conversation.extend([{"role": "user", "content": request.message},
+                             {"role": "assistant", "content": assistant_message}])
 
         save_conversation(session_id, conversation)
 
-        logger.info(
-            f"Response: {assistant_message} | Session ID: {session_id}"
-        )
+        logger.info(f"Response: {assistant_message} | Session ID: {session_id}")
 
-        return ChatResponse(
-            response=assistant_message,
-            session_id=session_id
-        )
+        return ChatResponse(response=assistant_message, session_id=session_id)
 
     except Exception as e:
         logger.exception("Chat API failed")
-        raise HTTPException(
-            status_code=500,
-            detail=f"Error: {str(e)}"
-        )
+        raise HTTPException(status_code=500, detail=f"Error: {str(e)}")
 
 
 @app.post("/sessions")

@@ -13,7 +13,7 @@ def extract_resources(folder: Path):
 
         return {
             "linkedin": linkedin_text,
-            "summery": (folder / "summery.txt").read_text(encoding="utf-8"),
+            "summery": (folder / "summary.txt").read_text(encoding="utf-8"),
             "facts": json.loads((folder / "facts.json").read_text(encoding="utf-8")),
             "styles": (folder / "styles.txt").read_text(encoding="utf-8"),
         }
