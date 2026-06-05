@@ -1,10 +1,59 @@
 import shutil
 import subprocess
+import zipfile
 from pathlib import Path
 
-# Output package directory and zip file name
+# Build artifacts
 PACKAGE_DIR = Path("lambda-package")
 ZIP_FILE = Path("lambda-package.zip")
+
+
+def cleanup_package():
+    """
+    Remove files that are not required at runtime to reduce
+    the Lambda deployment package size.
+    """
+    print("Removing unnecessary files...")
+
+    patterns = [
+        "**/__pycache__",
+        "**/*.pyc",
+        "**/*.pyo",
+        "**/*.dist-info",
+        "**/*.egg-info",
+        "**/tests",
+        "**/test",
+    ]
+
+    for pattern in patterns:
+        for path in PACKAGE_DIR.glob(pattern):
+            try:
+                if path.is_dir():
+                    shutil.rmtree(path, ignore_errors=True)
+                else:
+                    path.unlink(missing_ok=True)
+            except Exception as ex:
+                print(f"Warning: Could not remove {path}: {ex}")
+
+
+def create_zip():
+    """
+    Create a compressed deployment package.
+    """
+    print("Creating deployment package...")
+
+    with zipfile.ZipFile(
+        ZIP_FILE,
+        mode="w",
+        compression=zipfile.ZIP_DEFLATED,
+        compresslevel=9,
+    ) as zip_file:
+        for file in PACKAGE_DIR.rglob("*"):
+            zip_file.write(file, file.relative_to(PACKAGE_DIR))
+
+    size_mb = ZIP_FILE.stat().st_size / (1024 * 1024)
+    print(f"Deployment package created: {ZIP_FILE}")
+    print(f"Package size: {size_mb:.2f} MB")
 
 
 def deploy():
@@ -12,63 +61,74 @@ def deploy():
     Build an AWS Lambda deployment package.
 
     Steps:
-    1. Remove any existing deployment artifacts.
-    2. Install dependencies into a local package directory using the
-       AWS Lambda Python 3.12 Docker image.
-    3. Copy application source code and supporting files.
-    4. Create a ZIP archive ready for Lambda deployment.
+    1. Remove previous build artifacts.
+    2. Install dependencies using the AWS Lambda Python container.
+    3. Copy source code and supporting files.
+    4. Remove unnecessary files.
+    5. Create a compressed ZIP package.
     """
 
-    # Clean up previous build artifacts
+    # Clean previous build
     shutil.rmtree(PACKAGE_DIR, ignore_errors=True)
     ZIP_FILE.unlink(missing_ok=True)
 
-    # Create a fresh package directory
-    PACKAGE_DIR.mkdir()
+    # Create package directory
+    PACKAGE_DIR.mkdir(parents=True)
 
     print("Installing dependencies for AWS Lambda...")
 
-    # Install dependencies inside a Lambda-compatible environment
-    result = subprocess.run(
+    subprocess.run(
         [
-            "docker", "run", "--rm", "-v",
+            "docker",
+            "run",
+            "--rm",
+            "-v",
             f"{Path.cwd()}:/var/task",
-            "--platform", "linux/amd64",
-            "--entrypoint", "/bin/sh",
+            "-w",
+            "/var/task",
+            "--platform",
+            "linux/amd64",
+            "--entrypoint",
+            "/bin/sh",
             "public.ecr.aws/lambda/python:3.12",
-            "-c", (
-            "pip install -r requirements.txt "
-            "-t /var/task/lambda-package "
-            "--platform manylinux2014_x86_64 "
-            "--only-binary=:all: "
-            "--no-cache-dir "
-            "--upgrade"
-        ),
+            "-c",
+            (
+                "pip install "
+                "-r requirements.txt "
+                "-t lambda-package "
+                "--platform manylinux2014_x86_64 "
+                "--only-binary=:all: "
+                "--no-cache-dir "
+                "--upgrade"
+            ),
         ],
         check=True,
     )
 
-    result.check_returncode()
-    # Copy application directories if they exist
+    # Copy application folders
     for folder in ("data", "src"):
         src = Path(folder)
         if src.exists():
+            print(f"Copying {folder}/")
             shutil.copytree(src, PACKAGE_DIR / folder)
 
-    # Copy Lambda entry-point and supporting Python files
-    for file in ("deploy.py", "lambda_handler.py", "main.py", "__init__.py"):
-        src = Path(file)
-        if src.exists():
-            shutil.copy(src, PACKAGE_DIR)
+    # Copy Lambda entry-point files
+    for file_name in (
+        "lambda_handler.py",
+        "main.py",
+        "__init__.py",
+    ):
+        file_path = Path(file_name)
+        if file_path.exists():
+            print(f"Copying {file_name}")
+            shutil.copy(file_path, PACKAGE_DIR)
 
-    print("Creating deployment package...")
+    # Remove unnecessary files
+    cleanup_package()
 
-    # Create lambda-package.zip from lambda-package/
-    shutil.make_archive(PACKAGE_DIR.name, "zip", PACKAGE_DIR)
-
-    print(f"Deployment package created: {ZIP_FILE}")
+    # Create zip
+    create_zip()
 
 
 if __name__ == "__main__":
-    # Execute deployment package creation when run as a script
     deploy()

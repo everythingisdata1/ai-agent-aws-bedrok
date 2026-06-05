@@ -1,10 +1,15 @@
 import json
+import logging
 from pathlib import Path
 
 from pypdf import PdfReader
 
+log = logging.getLogger(__name__)
+log.setLevel(logging.INFO)
+
 
 def extract_resources(folder: Path):
+    log.info(f"Extracting resources from folder: {folder}")
     try:
         linkedin_text = "".join(
             page.extract_text() or ""
@@ -19,5 +24,5 @@ def extract_resources(folder: Path):
         }
 
     except Exception as e:
-        print(f"Error extracting text from PDF: {e}")
+        log.info(f"Error extracting text from PDF: {e}")
         return None

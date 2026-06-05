@@ -9,8 +9,14 @@ from src.config.app_config import get_agent_config
 from src.model import ChatResponse, ChatRequest
 from src.services import chat_service
 
-logging.basicConfig(level=logging.INFO)
-logger = logging.getLogger(__name__)
+# Configure logging for AWS Lambda / CloudWatch
+logging.basicConfig(level=logging.INFO,
+                    format="%(asctime)s %(levelname)s %(name)s - %(message)s",
+                    force=True,  # Ensures configuration is applied even if another framework configured logging
+                    )
+
+log = logging.getLogger(__name__)
+log.setLevel(logging.INFO)
 
 load_dotenv(override=True)
 
