@@ -1,5 +1,5 @@
 [project]
-name = "backend"
+name = "ai-assistant-platform"
 version = "0.1.0"
 description = "Add your description here"
 readme = "README.md"
@@ -7,6 +7,7 @@ requires-python = ">=3.13"
 dependencies = [
     "boto3>=1.43.20",
     "fastapi>=0.136.3",
+    "mangum>=0.21.0",
     "openai>=2.38.0",
     "pypdf>=6.12.2",
     "python-dotenv>=1.2.2",
