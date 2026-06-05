@@ -33,3 +33,5 @@ coverage/
 *.pem
 *.key
 *.crt           
+/backend/lambda-package/
+/memory_data/
