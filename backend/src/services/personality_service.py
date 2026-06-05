@@ -1,5 +1,5 @@
-from backend.src.config.app_config import AgentConfig
-from backend.src.config.memory_loader import get_file
+from src.config.app_config import AgentConfig
+from src.config.memory_loader import get_file
 
 
 def read_personality(agent_conf: AgentConfig) -> str:

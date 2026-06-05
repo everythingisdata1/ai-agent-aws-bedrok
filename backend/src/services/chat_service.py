@@ -3,13 +3,12 @@ import uuid
 
 from fastapi import HTTPException
 from openai import OpenAI
-
-from backend.src.config.app_config import AgentConfig
-from backend.src.model import ChatRequest, ChatResponse
-from backend.src.services.conversation_service import ConversationService
+from src.config.app_config import AgentConfig
+from src.model import ChatRequest, ChatResponse
+from src.services.conversation_service import ConversationService
+from src.services.personality_service import read_personality
 
 log = logging.getLogger(__name__)
-from backend.src.services.personality_service import read_personality
 
 
 class ChatService:
@@ -20,6 +19,10 @@ class ChatService:
         self.client = OpenAI(api_key=self.agent_conf.openai_api_key)
 
     def chat(self, request: ChatRequest):
+        print(
+            f"ChatService instance ID: {id(self)} | Received message: {request.message} | Session ID: {request.session_id}")
+        log.info(
+            f"ChatService instance ID: {id(self)} | Received message: {request.message} | Session ID: {request.session_id}")
         try:
             session_id = request.session_id or str(uuid.uuid4())
 

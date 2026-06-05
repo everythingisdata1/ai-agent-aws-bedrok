@@ -2,8 +2,8 @@ import json
 import logging
 from typing import Dict, TypeAlias
 
-from backend.src.config.app_config import AgentConfig
-from backend.src.config.memory_loader import get_file, save_file
+from src.config.app_config import AgentConfig
+from src.config.memory_loader import get_file, save_file
 
 logging.basicConfig(level=logging.INFO)
 log = logging.getLogger(__name__)

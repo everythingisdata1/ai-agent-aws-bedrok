@@ -1,12 +1,13 @@
 import logging
+
 print("main.py loaded", __name__)
 from dotenv import load_dotenv
 from fastapi import FastAPI
 from starlette.middleware.cors import CORSMiddleware
 
-from backend.src.config.app_config import get_agent_config
-from backend.src.model import ChatResponse, ChatRequest
-from backend.src.services import chat_service
+from src.config.app_config import get_agent_config
+from src.model import ChatResponse, ChatRequest
+from src.services import chat_service
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
@@ -38,6 +39,7 @@ def health_check():
 
 @app.post("/chat", response_model=ChatResponse)
 def chat(request: ChatRequest):
+    print("Received chat request:", request)
     return agentService.chat(request)
 
 
